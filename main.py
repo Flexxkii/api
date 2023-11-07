@@ -5,7 +5,7 @@ import psutil
 import httpx
 import json
 
-app = FastAPI()
+app = FastAPI(host="0.0.0.0", port=8000)  # Bind to all network interfaces and port 8000
 
 # Create a global async client to reduce overhead
 client = httpx.AsyncClient()
