@@ -1,14 +1,30 @@
 import requests
 import json
+import socket
+
+def get_local_ip():
+    try:
+        host_name = socket.gethostname()
+        local_ip = socket.gethostbyname(host_name)
+        return local_ip
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 def fetch_data_from_api():
-    try:
-        response = requests.get("http://localhost:8000/get_all_data")
-        response.raise_for_status()  # Raise an exception for 4xx/5xx status codes
-        data = response.json()
-        return data["data"]
-    except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
+    local_ip = get_local_ip()
+    if local_ip:
+        api_url = f"http://{local_ip}:8000/get_all_data"
+        try:
+            response = requests.get(api_url)
+            response.raise_for_status()  # Raise an exception for 4xx/5xx status codes
+            data = response.json()
+            return data["data"]
+        except requests.exceptions.RequestException as e:
+            print(f"Error: {e}")
+            return None
+    else:
+        print("Failed to retrieve local IP address.")
         return None
 
 def convert_boolean_fields(data, fields_to_convert):
