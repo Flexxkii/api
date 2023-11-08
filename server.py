@@ -2,6 +2,10 @@ import argparse
 import requests
 import json
 import datetime
+import schedule
+import time
+
+print("fetching data.")
 
 def fetch_data_from_api(local_ip):
     if local_ip:
@@ -10,6 +14,7 @@ def fetch_data_from_api(local_ip):
             response = requests.get(api_url)
             response.raise_for_status()  # Raise an exception for 4xx/5xx status codes
             data = response.json()
+            print("Data fetched")
             return data["data"]
         except requests.exceptions.RequestException as e:
             print(f"Error: {e}")
@@ -42,6 +47,15 @@ def save_to_json(data, filename="output.json"):
     print(f"Current Date and Time: {current_datetime}")
     print(f"Data has been saved to {filename}")
 
+def run_script(ip):
+    fetched_data = fetch_data_from_api(ip)
+    if fetched_data:
+        grouped_data = group_fields_under_subfield(fetched_data, fields_to_group, subfield_name)
+        grouped_data2 = group_fields_under_subfield(grouped_data, fields_to_group2, subfield_name2)
+        save_to_json(grouped_data2, filename="output.json")
+    else:
+        print("Failed to fetch data from the API.")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fetch data from API and save it to JSON file.")
     parser.add_argument("--ip", help="Local IP address", required=True)
@@ -54,9 +68,12 @@ if __name__ == "__main__":
 
     fetched_data = fetch_data_from_api(args.ip)
 
-    if fetched_data:
-        grouped_data = group_fields_under_subfield(fetched_data, fields_to_group, subfield_name)
-        grouped_data2 = group_fields_under_subfield(grouped_data, fields_to_group2, subfield_name2)
-        save_to_json(grouped_data2, filename="output.json")
-    else:
-        print("Failed to fetch data from the API.")
+    # Run the script immediately
+    run_script(args.ip)
+
+    # Schedule the script to run every 2 minutes
+    schedule.every(1).minutes.do(run_script, args.ip)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
