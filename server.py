@@ -1,18 +1,8 @@
+import argparse
 import requests
 import json
-import socket
 
-def get_local_ip():
-    try:
-        host_name = socket.gethostname()
-        local_ip = socket.gethostbyname(host_name)
-        return local_ip
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-
-def fetch_data_from_api():
-    local_ip = get_local_ip()
+def fetch_data_from_api(local_ip):
     if local_ip:
         api_url = f"http://{local_ip}:8000/get_all_data"
         try:
@@ -49,12 +39,16 @@ def save_to_json(data, filename="output.json"):
     print(f"Data has been saved to {filename}")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Fetch data from API and save it to JSON file.")
+    parser.add_argument("--ip", help="Local IP address", required=True)
+    args = parser.parse_args()
+
     fields_to_group = ["room_living_room_facilitites", "room_kitchen_facilitites", "room_toilet_facilitites", "room_bathroom_facilitites", "room_bedroom_facilitites"]  # Add other fields to group
     fields_to_group2 = ["Huisdieren", "Muziek-instrument", "Energy_label", "Elevator", "Flooring", "Garden", "Heatings", "Maintenance_indoor", "Maintenance_outdoor", "Price_on_request", "Rental_period", "Roofterrace", "Smoking Allowed", "Balcony", "Servicekosten yes/no", "Kadestraal_owner"]  # Add other fields to group
     subfield_name = "facilities"  # Specify the subfield name
     subfield_name2 = "info"  # Specify the subfield name
 
-    fetched_data = fetch_data_from_api()
+    fetched_data = fetch_data_from_api(args.ip)
 
     if fetched_data:
         grouped_data = group_fields_under_subfield(fetched_data, fields_to_group, subfield_name)
