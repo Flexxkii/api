@@ -1,6 +1,7 @@
 import argparse
 import requests
 import json
+import datetime
 
 def fetch_data_from_api(local_ip):
     if local_ip:
@@ -34,8 +35,11 @@ def group_fields_under_subfield(data, fields_to_group, subfield_name):
     return data
 
 def save_to_json(data, filename="output.json"):
+    current_datetime = datetime.datetime.now()
     with open(filename, "w") as json_file:
         json.dump(data, json_file, indent=4)
+     # Print current date and time
+    print(f"Current Date and Time: {current_datetime}")
     print(f"Data has been saved to {filename}")
 
 if __name__ == "__main__":
